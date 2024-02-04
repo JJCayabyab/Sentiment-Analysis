@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, jsonify, abort
 import csv
 
 app = Flask(__name__)
@@ -18,7 +18,7 @@ class SentimentAnalyzer:
         return fsm
 
     def analyze_sentiment(self, text):
-        words = text.split()  # Split the text into words
+        words = text.lower().split()  # Convert to lowercase and split the text into words
         positive_score = sum(self.check_fsm(word, self.positive_fsm) for word in words)
         negative_score = sum(self.check_fsm(word, self.negative_fsm) for word in words)
 
@@ -37,50 +37,73 @@ class SentimentAnalyzer:
                 if 'is_end' in fsm:
                     score += 1
             else:
-                fsm = self.positive_fsm  # Reset to initial state for the next word
+                fsm = self.positive_fsm  # Reset to the initial state for the next word
         return score
 
 # Load positive and negative lexicons from text files
-with open('positive.txt', 'r') as file:
-    positive_lexicon = file.read().splitlines()
+try:
+    with open('positive.txt', 'r') as file:
+        positive_lexicon = file.read().splitlines()
 
-with open('negative.txt', 'r') as file:
-    negative_lexicon = file.read().splitlines()
+    with open('negative.txt', 'r') as file:
+        negative_lexicon = file.read().splitlines()
 
-# Initialize the SentimentAnalyzer
-sentiment_analyzer = SentimentAnalyzer(positive_lexicon, negative_lexicon)
+    # Initialize the SentimentAnalyzer
+    sentiment_analyzer = SentimentAnalyzer(positive_lexicon, negative_lexicon)
+except FileNotFoundError as e:
+    print(f"Error: {e}")
+    # Handle the missing file error appropriately
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+    # Handle other potential exceptions
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    text = request.form.get('text')
-    file = request.files.get('file')
+@app.route('/api/sentiment', methods=['POST'])
+def analyze_sentiment():
+    try:
+        data = request.get_json()
 
-    if not text and not file:
-        return redirect(url_for('index'))
-
-    if file:
-        # Process CSV file
-        results = process_csv(file)
+        if 'file' in request.files:
+            # Handle CSV file input
+            file = request.files['file']
+            if file and file.filename.endswith('.csv'):
+                messages = []
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if 'message' in row:
+                        messages.append(row['message'])
+                results = [{'message': message, 'sentiment': sentiment_analyzer.analyze_sentiment(message)} for message in messages]
+                return jsonify({'results': results})
+            else:
+                return jsonify({'error': 'Invalid file format'}), 400
+        elif 'text' in data:
+            # Handle text input
+            text = data['text']
+            sentiment = sentiment_analyzer.analyze_sentiment(text)
+            return jsonify({'message': text, 'sentiment': sentiment})
+        else:
+            return jsonify({'error': 'Invalid input format'}), 400
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        abort(500)
+    
+@app.route('/api/upload_csv', methods=['POST'])
+def upload_csv():
+    file = request.files['file']
+    if file and file.filename.endswith('.csv'):
+        # Assuming the CSV file has a 'message' column
+        messages = []
+        reader = csv.DictReader(file)
+        for row in reader:
+            if 'message' in row:
+                messages.append(row['message'])
+        results = [{'message': message, 'sentiment': sentiment_analyzer.analyze_sentiment(message)} for message in messages]
+        return jsonify({'results': results})
     else:
-        # Process text input
-        results = [{'text': text, 'lexicon': sentiment_analyzer.analyze_sentiment(text)}]
-
-    return render_template('result.html', results=results)
-
-def process_csv(file):
-    results = []
-    reader = csv.DictReader(file.read().decode('utf-8').splitlines())
-    
-    for row in reader:
-        text = row['message']
-        lexicon = sentiment_analyzer.analyze_sentiment(text)
-        results.append({'text': text, 'lexicon': lexicon})
-    
-    return results
+        return jsonify({'error': 'Invalid file format'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

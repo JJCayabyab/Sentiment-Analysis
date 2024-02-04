@@ -1,47 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>Sentiment Analysis</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">   
-    </head>
 
-    <body>
-        <main class="table">
-    
-            <section class="table_header">
-                <h2>Sentiment Analysis</h2>
-            </section>
-            <section class="input">
-                <form id="sentimentForm" action="/analyze" method="post" enctype="multipart/form-data">
-                    <textarea id="inputText" type="text" placeholder="Enter your message"></textarea>
-                    <section class="button-container">
-                        <button type="file" name="file" id="file" accept=".csv" onclick="chooseFile()">Choose File</button>
-                        <button type="button" class="btnsub" onclick="analyzeText()">Analyze</button>
-                        <button type="button" class="btncls" onclick="clearText()">Clear Text</button>
-                        <button type="button" class="btntbl" onclick="clearTable()">Clear Table</button>
-                    </section>
-                </form>    
-            </section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 
-            <section class="table_body">
-                <table>
+<body>
+    <main class="table">
+
+        <section class="table_header">
+            <h2 id="tableHeader">Sentiment Analysis</h2>
+        </section>
+        <section class="input">
+            <form id="sentimentForm" method="POST" enctype="multipart/form-data">
+                <textarea id="inputText" name="inputText" placeholder="Enter your message"></textarea>
+                <input type="file" id="fileInput" style="display: none" accept=".csv" onchange="handleFile()">
+                <section class="button-container">
+                    <button type="button" class="btnup" onclick="openFile()">
+                        <span id="fileButton">Choose File</span>
+                    </button>
+                    <button type="button" class="btnsub" onclick="submitForm()">Analyze</button>
+                    <button type="button" class="btncls" onclick="clearText()">Clear Text</button>
+                    <button type="button" class="btntbl" onclick="clearTable()">Clear Table</button>
+                </section>
+            </form>
+        </section>
+
+        <section class="table_body">
+            <table>
+                <thead>
                     <tr>
-                        <th>Text</th>
-                        <th>Lexicon</th>
+                        <th id="messageHeader">Message</th>
+                        <th id="sentimentHeader">Sentiment Analysis</th>
                     </tr>
-                    {% for result in results %}
-                        <tr>
-                            <td id = "Text">{{ result.text }}</td>
-                            <td id = "Lexicon">{{ result.lexicon }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </section>
-        </main>
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
-    </body>
-    
-    </html>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</html>

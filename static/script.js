@@ -1,108 +1,173 @@
-function chooseFile() {
-    // Create a file input dynamically
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.name = 'file';
-    fileInput.id = 'file';
-    fileInput.accept = '.csv';
-
-    // Append the file input to the form
-    const form = document.getElementById('sentimentForm');
-    form.appendChild(fileInput);
-
-    // Trigger the click event to open the file dialog
-    fileInput.click();
-
-    // Remove the file input after the user selects a file
-    fileInput.addEventListener('change', function () {
-        // Remove any existing hidden input for text
-        const hiddenInput = document.getElementById('hiddenText');
-        if (hiddenInput) {
-            form.removeChild(hiddenInput);
-        }
-
-        // Remove the file input after the user selects a file
-        form.removeChild(fileInput);
-    });
+function openFile() {
+    document.getElementById('fileInput').click();
 }
 
-function analyzeText() {
-    // Retrieve the input text
-    const text = document.getElementById('inputText').value;
+function handleFile() {
+    var fileInput = document.getElementById('fileInput');
+    var selectedFile = fileInput.files[0];
 
-    // Create a hidden input field for text
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.name = 'text';
-    hiddenInput.id = 'hiddenText';
-    hiddenInput.value = text;
+    // Check if a file is selected
+    if (selectedFile) {
+        // Check if the selected file is a CSV file
+        if (selectedFile.name.toLowerCase().endsWith('.csv')) {
+            var reader = new FileReader();
 
-    const form = document.getElementById('sentimentForm');
-    form.appendChild(hiddenInput);
+            reader.onload = function (e) {
+                var csvContent = e.target.result;
+                var rows = csvContent.split('\n');
+                var tableBody = document.getElementById('tableBody');
 
-    // Fetch the sentiment analysis result
-    fetch('/analyze', {
-        method: 'POST',
-        body: new FormData(form),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(results => {
-        // Check the console for the received results
-        console.log(results);
+                // Clear existing table content
+                tableBody.innerHTML = '';
 
-        // Update the table dynamically with the sentiment analysis results
-        updateTable(results);
+                // Find the index of the "message" column dynamically
+                var headerRow = rows[0].split(',');
+                var messageIndex = headerRow.findIndex(column => column.toLowerCase().trim() === 'message');
 
-        // Remove the hidden input after form submission
-        form.removeChild(hiddenInput);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        
-        // Check if the response is JSON
-        if (error.headers && error.headers.get('content-type') && error.headers.get('content-type').includes('application/json')) {
-            return error.json().then(errorMessage => console.error('Server Response:', errorMessage));
+                for (var i = 1; i < rows.length; i++) {
+                    var cells = rows[i].split(',');
+
+                    if (cells.length > messageIndex) {
+                        var newRow = tableBody.insertRow();
+                        var messageCell = newRow.insertCell(0);
+                        var sentimentCell = newRow.insertCell(1); // Define sentimentCell here
+
+                        var messageText = cells[messageIndex].trim();
+                        messageCell.innerHTML = messageText;
+
+                        // Analyze sentiment for each message
+                        analyzeTextSentiment(messageText, sentimentCell);
+                    }
+                }
+
+                alert('CSV file uploaded and table updated successfully.');
+            };
+
+            reader.readAsText(selectedFile);
         } else {
-            console.error('Server Response is not JSON:', error.statusText);
+            // Show an error alert for invalid file format
+            alert('Invalid file format. Please select a CSV file.');
+            // Reset the file input
+            fileInput.value = '';
         }
-    });
+    } else {
+        // The user canceled file selection
+        console.log('File selection canceled.');
+    }
 }
 
-// Function to update the table with sentiment analysis results
-function updateTable(results) {
-    const tableBody = document.querySelector('.table_body table tbody');
+
+function submitForm() {
+    var fileInput = document.getElementById('fileInput');
+    var textInput = document.getElementById('inputText').value;
+
+    if (fileInput.files.length > 0) {
+        handleFile();  // Call the handleFile function for CSV file analysis
+    } else if (textInput.trim() !== '') {
+        // Analyze sentiment for text input
+        var tableBody = document.getElementById('tableBody');
+        var newRow = tableBody.insertRow();
+        var messageCell = newRow.insertCell(0);
+        var sentimentCell = newRow.insertCell(1);
+
+        // Display the input text in the table
+        messageCell.innerHTML = textInput;
+
+        // Analyze sentiment for text input
+        analyzeTextSentiment(textInput, sentimentCell);
+    } else {
+        alert('Please enter text or choose a CSV file before analyzing.');
+    }
+}
+
+    // Modify the handleFile function to dynamically analyze based on "message" column
+    function handleFile() {
+        var fileInput = document.getElementById('fileInput');
+        var selectedFile = fileInput.files[0];
     
-    // Clear existing table content
-    tableBody.innerHTML = '';
-
-    // Iterate through the results and append rows to the table
-    results.forEach(result => {
-        const row = document.createElement('tr');
-        const textCell = document.createElement('td');
-        const lexiconCell = document.createElement('td');
-
-        textCell.textContent = result.text;
-        lexiconCell.textContent = result.lexicon;
-
-        row.appendChild(textCell);
-        row.appendChild(lexiconCell);
-
-        tableBody.appendChild(row);
-    });
-}
+        // Check if a file is selected
+        if (selectedFile) {
+            // Check if the selected file is a CSV file
+            if (selectedFile.name.toLowerCase().endsWith('.csv')) {
+                var reader = new FileReader();
+    
+                reader.onload = function (e) {
+                    var csvContent = e.target.result;
+                    var rows = csvContent.split('\n');
+                    var tableBody = document.getElementById('tableBody');
+    
+                    // Clear existing table content
+                    tableBody.innerHTML = '';
+    
+                    // Find the index of the "message" column dynamically
+                    var headerRow = rows[0].split(',');
+                    var messageIndex = headerRow.findIndex(column => column.toLowerCase().trim() === 'message');
+    
+                    for (var i = 1; i < rows.length; i++) {
+                        var cells = rows[i].split(',');
+    
+                        if (cells.length > messageIndex) {
+                            var newRow = tableBody.insertRow();
+                            var messageCell = newRow.insertCell(0);
+                            var sentimentCell = newRow.insertCell(1);
+    
+                            var messageText = cells[messageIndex].trim();
+                            messageCell.innerHTML = messageText;
+    
+                            // Analyze sentiment for each message
+                            analyzeTextSentiment(messageText, sentimentCell);
+                        }
+                    }
+    
+                    alert('CSV file uploaded and table updated successfully.');
+                };
+    
+                reader.readAsText(selectedFile);
+            } else {
+                // Show an error alert for invalid file format
+                alert('Invalid file format. Please select a CSV file.');
+                // Reset the file input
+                fileInput.value = '';
+            }
+        } else {
+            // The user canceled file selection
+            console.log('File selection canceled.');
+        }
+    }
+    
+    // Modify the analyzeTextSentiment function to handle both CSV and text inputs
+    function analyzeTextSentiment(text, sentimentCell) {
+        // Assuming your Flask server is running on http://127.0.0.1:5000
+        fetch('http://127.0.0.1:5000/api/sentiment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 'text': text }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('API Response:', data);  // Add this line for debugging
+            sentimentCell.innerHTML = data.sentiment;
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
 
 function clearText() {
-    // Clear the input text
     document.getElementById('inputText').value = '';
 }
 
-function clearTable() {
+ function clearTable() {
+    // Clear the name displayed on the button
+    var button = document.getElementById('fileButton');
+    button.innerText = 'Choose File';
+
+    // Reset the file input
+    var fileInput = document.getElementById('fileInput');
+    fileInput.value = '';
+
     // Clear the table content
-    const tableBody = document.querySelector('.table_body table tbody');
+    var tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
 }
