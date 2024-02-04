@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for
-from flask import jsonify
 import csv
 
 app = Flask(__name__)
@@ -63,19 +62,14 @@ def analyze():
     if not text and not file:
         return redirect(url_for('index'))
 
-    try:
-        if file:
-            # Process CSV file
-            results = process_csv(file)
-            return jsonify(results)
-        else:
-            # Process text input
-            result = {'text': text, 'lexicon': sentiment_analyzer.analyze_sentiment(text)}
-            return jsonify([result])
-    except Exception as e:
-        # Handle any exceptions and return an error response
-        return jsonify({'error': str(e)}), 500
+    if file:
+        # Process CSV file
+        results = process_csv(file)
+    else:
+        # Process text input
+        results = [{'text': text, 'lexicon': sentiment_analyzer.analyze_sentiment(text)}]
 
+    return render_template('result.html', results=results)
 
 def process_csv(file):
     results = []
