@@ -4,141 +4,45 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <Title>Senti-Analysis</Title>
-        <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light+Two&display=swap" rel="stylesheet">
+        <Title>Sentiment Analysis</Title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">   
     </head>
+
     <body>
-        
         <main class="table">
-
+    
             <section class="table_header">
-                <h2>Senti-Analysis</h2>
+                <h2>Sentiment Analysis</h2>
             </section>
-
             <section class="input">
+    
                 <textarea type="text" placeholder="Enter your message"></textarea>
-                <button type="submit" class="btnsub">Analyze</button>
+                
+                <section class="button-container">
+                    <button type="upload" class="btnup">Choose File</button>
+                    <button type="submit" class="btnsub">Analyze</button>
+                    <button type="cleartxt" class="btncls">Clear Text</button>
+                    <button type="cleartbl" class="btntbl">Clear Table</button>
+                </section>
+    
             </section>
-
+    
             <section class="table_body">
                 <table>
                     <thead>
                         <tr>
                             <th> Message </th>
                             <th> Sentiment Analysis </th>
-                          
                         </tr>
-                    <thead>
-                        <tbody>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-                        
-                            <tr>
-                                <td> I'm just enjoying some alone time </td>
-                                <td> neutral </td>
-                            </tr>
-
-                        </tbody>
-
                     </thead>
-                    </thead>
+                    <tbody>
+                        <tr>
+                            <td> I'm just enjoying some alone time </td>
+                        </tr>
+                    </tbody>
                 </table>
             </section>
         </main>
     </body>
     
-</html>
+    </html>
