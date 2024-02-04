@@ -41,21 +41,17 @@ class SentimentAnalyzer:
         return score
 
 # Load positive and negative lexicons from text files
-try:
-    with open('positive.txt', 'r') as file:
-        positive_lexicon = file.read().splitlines()
+positive_lexicon_path = 'positive.txt'
+negative_lexicon_path = 'negative.txt'
 
-    with open('negative.txt', 'r') as file:
-        negative_lexicon = file.read().splitlines()
+with open(positive_lexicon_path, 'r') as file:
+    positive_lexicon = file.read().splitlines()
 
-    # Initialize the SentimentAnalyzer
-    sentiment_analyzer = SentimentAnalyzer(positive_lexicon, negative_lexicon)
-except FileNotFoundError as e:
-    print(f"Error: {e}")
-    # Handle the missing file error appropriately
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
-    # Handle other potential exceptions
+with open(negative_lexicon_path, 'r') as file:
+    negative_lexicon = file.read().splitlines()
+
+# Initialize the SentimentAnalyzer
+sentiment_analyzer = SentimentAnalyzer(positive_lexicon, negative_lexicon)
 
 @app.route('/')
 def index():
@@ -90,11 +86,8 @@ def analyze_sentiment():
         print(f"An unexpected error occurred: {e}")
         abort(500)
     
-@app.route('/api/upload_csv', methods=['POST'])
-def upload_csv():
-    file = request.files['file']
+def process_csv(file):
     if file and file.filename.endswith('.csv'):
-        # Assuming the CSV file has a 'message' column
         messages = []
         reader = csv.DictReader(file)
         for row in reader:
@@ -104,6 +97,11 @@ def upload_csv():
         return jsonify({'results': results})
     else:
         return jsonify({'error': 'Invalid file format'}), 400
+
+@app.route('/api/upload_csv', methods=['POST'])
+def upload_csv():
+    file = request.files['file']
+    return process_csv(file)
 
 if __name__ == '__main__':
     app.run(debug=True)
