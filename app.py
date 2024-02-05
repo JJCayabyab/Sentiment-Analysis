@@ -46,15 +46,22 @@ class SentimentAnalyzer:
         
     def check_fsm(self, word, fsm):
         score = 0
-        for char in word:
+        transitions = []
+        print(f"Analyzing word: {word}")
+
+        for i, char in enumerate(word):
             if char in fsm:
                 fsm = fsm[char]
                 if 'is_end' in fsm:
                     score += 1
+                transitions.append(char)
             else:
                 fsm = self.positive_fsm  # Reset to the initial state for the next word
-        return score
+                transitions.append(f"Reset ({char})")
 
+        print(" -> ".join(transitions))
+        return score
+    
     def is_negation(self, word):
         # Hardcoded negation words
         negation_words = [
@@ -70,6 +77,72 @@ class SentimentAnalyzer:
         ]
 
         return word.lower() in negation_words
+
+# Load positive and negative lexicons from text files
+positive_lexicon_path = 'positive.txt'
+negative_lexicon_path = 'negative.txt'
+
+with open(positive_lexicon_path, 'r') as file:
+    positive_lexicon = file.read().splitlines()
+
+with open(negative_lexicon_path, 'r') as file:
+    negative_lexicon = file.read().splitlines()
+
+# Initialize the SentimentAnalyzer
+sentiment_analyzer = SentimentAnalyzer(positive_lexicon, negative_lexicon)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/sentiment', methods=['POST'])
+def analyze_sentiment():
+    try:
+        data = request.get_json()
+
+        if 'file' in request.files:
+            # Handle CSV file input
+            file = request.files['file']
+            if file and file.filename.endswith('.csv'):
+                messages = []
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if 'message' in row:
+                        messages.append(row['message'])
+                results = [{'message': message, 'sentiment': sentiment_analyzer.analyze_sentiment(message)} for message in messages]
+                return jsonify({'results': results})
+            else:
+                return jsonify({'error': 'Invalid file format'}), 400
+        elif 'text' in data:
+            # Handle text input
+            text = data['text']
+            sentiment = sentiment_analyzer.analyze_sentiment(text)
+            return jsonify({'message': text, 'sentiment': sentiment})
+        else:
+            return jsonify({'error': 'Invalid input format'}), 400
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        abort(500)
+    
+def process_csv(file):
+    if file and file.filename.endswith('.csv'):
+        messages = []
+        reader = csv.DictReader(file)
+        for row in reader:
+            if 'message' in row:
+                messages.append(row['message'])
+        results = [{'message': message, 'sentiment': sentiment_analyzer.analyze_sentiment(message)} for message in messages]
+        return jsonify({'results': results})
+    else:
+        return jsonify({'error': 'Invalid file format'}), 400
+
+@app.route('/api/upload_csv', methods=['POST'])
+def upload_csv():
+    file = request.files['file']
+    return process_csv(file)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # Load positive and negative lexicons from text files
 positive_lexicon_path = 'positive.txt'
