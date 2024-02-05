@@ -19,8 +19,23 @@ class SentimentAnalyzer:
 
     def analyze_sentiment(self, text):
         words = text.lower().split()  # Convert to lowercase and split the text into words
-        positive_score = sum(self.check_fsm(word, self.positive_fsm) for word in words)
-        negative_score = sum(self.check_fsm(word, self.negative_fsm) for word in words)
+        positive_score = 0
+        negative_score = 0
+        negate = False
+
+        for word in words:
+            if self.is_negation(word):
+                negate = not negate
+            else:
+                score = self.check_fsm(word, self.positive_fsm) - self.check_fsm(word, self.negative_fsm)
+                if negate:
+                    score = -score
+                    negate = False
+                
+                if score > 0:
+                    positive_score += 1
+                elif score < 0:
+                    negative_score += 1
 
         if positive_score > negative_score:
             return "Positive"
@@ -28,7 +43,7 @@ class SentimentAnalyzer:
             return "Negative"
         else:
             return "Neutral"
-
+        
     def check_fsm(self, word, fsm):
         score = 0
         for char in word:
@@ -39,6 +54,22 @@ class SentimentAnalyzer:
             else:
                 fsm = self.positive_fsm  # Reset to the initial state for the next word
         return score
+
+    def is_negation(self, word):
+        # Hardcoded negation words
+        negation_words = [
+            'not', 'no', 'never', 'none', 'nobody', 'nowhere', 'nothing', 'neither', 'nor',
+            'hardly', 'scarcely', 'barely',
+            "isn't", "is not", "aren't", "are not",
+            "wasn't", "was not", "weren't", "were not",
+            "hasn't", "has not", "haven't", "have not",
+            "hadn't", "had not", "can't", "cannot",
+            "couldn't", "could not", "won't", "will not",
+            "wouldn't", "would not", "shouldn't", "should not",
+            "doesn't", "does not", "don't", "do not", "didn't", "did not"
+        ]
+
+        return word.lower() in negation_words
 
 # Load positive and negative lexicons from text files
 positive_lexicon_path = 'positive.txt'
